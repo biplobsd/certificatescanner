@@ -16,19 +16,23 @@ result
 
 */
 
-class OpenAIApi {
+class GeminiApi {
   final Dio dio = Dio();
-  final String apiKey = openAiApiKey;
-  final String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
-  Future<Map<String, dynamic>> sendImageToApi(String imageBase64) async {
+  Future<Map<String, dynamic>> sendImageToApi({
+    required String apiKey,
+    required String imageBase64,
+    String projectId = "certificate-scanning",
+    String location = 'us-central1',
+    String modelName = "google/gemini-1.5-flash",
+  }) async {
     final getSchema = OpenAiFunctionCalling.getSchema(
       apiKey: apiKey,
-      modelName: "gpt-4-turbo",
+      modelName: modelName,
       imageBase64: imageBase64,
     );
     final response = await dio.post(
-      apiUrl,
+      "https://$location-aiplatform.googleapis.com/v1beta1/projects/$projectId/locations/$location/endpoints/openapi/chat/completions",
       options: Options(headers: getSchema.headers),
       data: getSchema.data,
     );

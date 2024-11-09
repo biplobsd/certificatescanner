@@ -21,4 +21,9 @@ class Certificate {
       result: json['result'],
     );
   }
+
+  @override
+  String toString() {
+    return 'Certificate(examinationTitle: $examinationTitle, groupName: $groupName, rollNumber: $rollNumber, yearOfPassing: $yearOfPassing, result: $result)';
+  }
 }

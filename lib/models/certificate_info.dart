@@ -5,4 +5,8 @@ class CertificateInfo {
   String? errorMsg;
 
   CertificateInfo({this.certificate, this.errorMsg});
+
+  @override
+  String toString() =>
+      'CertificateInfo(certificate: $certificate, errorMsg: $errorMsg)';
 }

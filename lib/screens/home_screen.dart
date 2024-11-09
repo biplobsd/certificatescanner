@@ -1,13 +1,13 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/certificate.dart';
+import '../models/certificate_info.dart';
 import '../services/extract_certificate_info.dart';
 import '../utils/file_size_calculator.dart';
+import '../utils/google_get_access_token.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,16 +16,25 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-enum DropDownOption { openAi, googleVision }
+enum DropDownOption { openAi, gemini }
 
 class _HomeScreenState extends State<HomeScreen> {
   Uint8List? image;
   final ImagePicker picker = ImagePicker();
   bool isLoading = false;
-  double quality = 50;
+  double quality = 1;
   Certificate? certificate;
   String? errorMsg;
-  DropDownOption dropdownValue = DropDownOption.openAi;
+  DropDownOption dropdownValue = DropDownOption.gemini;
+
+  late GoogleGetAccessToken getAccessToken;
+
+  @override
+  void initState() {
+    super.initState();
+    getAccessToken = GoogleGetAccessToken();
+    getAccessToken.init();
+  }
 
   Future<void> pickImage(ImageSource source) async {
     final XFile? picked = await picker.pickImage(source: source);
@@ -78,21 +87,48 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      await ExtractCertificateInfo.usingGoogleVision(image!);
+      CertificateInfo? certificateInfo;
 
-      return;
+      switch (dropdownValue) {
+        case DropDownOption.openAi:
+          certificateInfo = await ExtractCertificateInfo.usingOpenAI(image!);
+          break;
+        case DropDownOption.gemini:
+          certificateInfo = await ExtractCertificateInfo.usingGemini(
+            apiKey: getAccessToken.accessToken.data,
+            image: image!,
+          );
+          break;
 
-      final certificateInfo = await ExtractCertificateInfo.usingOpenAI(image!);
+        default:
+      }
+
+      if (certificateInfo == null) return;
 
       if (certificateInfo.errorMsg != null) {
         errorMsg = certificateInfo.errorMsg;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg!),
+          ),
+        );
       }
 
       if (certificateInfo.certificate == null) {
         errorMsg = 'Error: Unexpected certificate null';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg!),
+          ),
+        );
       }
 
       certificate = certificateInfo.certificate;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(certificateInfo.toString()),
+        ),
+      );
     } catch (e) {
       debugPrint('Error during API call: $e');
     } finally {
