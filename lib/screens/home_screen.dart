@@ -16,6 +16,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+enum DropDownOption { openAi, googleVision }
+
 class _HomeScreenState extends State<HomeScreen> {
   Uint8List? image;
   final ImagePicker picker = ImagePicker();
@@ -23,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double quality = 50;
   Certificate? certificate;
   String? errorMsg;
+  DropDownOption dropdownValue = DropDownOption.openAi;
 
   Future<void> pickImage(ImageSource source) async {
     final XFile? picked = await picker.pickImage(source: source);
@@ -75,10 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      String imageBase64 = base64Encode(image!);
+      await ExtractCertificateInfo.usingGoogleVision(image!);
 
-      final certificateInfo =
-          await ExtractCertificateInfo.usingOpenAI(imageBase64);
+      return;
+
+      final certificateInfo = await ExtractCertificateInfo.usingOpenAI(image!);
 
       if (certificateInfo.errorMsg != null) {
         errorMsg = certificateInfo.errorMsg;
@@ -136,11 +140,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: CircularProgressIndicator(),
                   ),
                 const SizedBox(height: 10),
-                FilledButton(
-                  onPressed: () async {
-                    await pickImage(ImageSource.camera);
-                  },
-                  child: const Text("Capture a image"),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FilledButton(
+                      onPressed: () async {
+                        await pickImage(ImageSource.camera);
+                      },
+                      child: const Text("Capture a image"),
+                    ),
+                    const SizedBox(width: 10),
+                    FilledButton(
+                      onPressed: () async {
+                        await pickImage(ImageSource.gallery);
+                      },
+                      child: const Text("Pic a image"),
+                    ),
+                  ],
                 ),
                 ListTile(
                   title: FilledButton(
@@ -166,6 +182,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(quality.round().toString())
                     ],
                   ),
+                ),
+                const SizedBox(height: 10),
+                DropdownButton<DropDownOption>(
+                  value: dropdownValue,
+                  onChanged: (DropDownOption? value) {
+                    setState(() {
+                      dropdownValue = value!;
+                    });
+                  },
+                  items: DropDownOption.values
+                      .map<DropdownMenuItem<DropDownOption>>((var value) {
+                    return DropdownMenuItem<DropDownOption>(
+                      value: value,
+                      child: Text(value.name),
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 10),
                 FilledButton(

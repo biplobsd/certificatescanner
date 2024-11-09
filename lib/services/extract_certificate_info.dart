@@ -4,11 +4,20 @@ import 'package:certificatescanner/models/certificate.dart';
 import 'package:certificatescanner/models/certificate_info.dart';
 import 'package:flutter/foundation.dart';
 
+import 'google_vision_api.dart';
 import 'openai_api.dart';
 
 class ExtractCertificateInfo {
-  static Future<CertificateInfo> usingOpenAI(String imageBase64) async {
+  static Future<void> usingGoogleVision(Uint8List image) async {
+    final googleVisionApi = GoogleVisionApi();
+    await googleVisionApi.init();
+    final result = await googleVisionApi.sendImageToApi(image);
+    debugPrint(result.toString());
+  }
+
+  static Future<CertificateInfo> usingOpenAI(Uint8List image) async {
     try {
+      String imageBase64 = base64Encode(image);
       var result = await OpenAIApi().sendImageToApi(imageBase64);
 
       debugPrint('API Response:  ${jsonEncode(result)}');

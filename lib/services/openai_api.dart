@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import 'api_key.dart';
+import '../keys/api_key.dart';
 
 /*
 
