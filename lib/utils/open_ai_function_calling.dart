@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import '../models/certificate.dart';
 import '../models/certificate_info.dart';
 
+enum ForSchema { openai, gemini }
+
 class OpenAISchema {
   Map<String, dynamic> headers;
   Map<String, dynamic> data;
@@ -47,10 +49,12 @@ class OpenAiFunctionCalling {
     );
   }
 
-  static OpenAISchema getSchema(
-      {required String apiKey,
-      required String modelName,
-      required String imageBase64}) {
+  static OpenAISchema getSchema({
+    required String apiKey,
+    required String modelName,
+    required String imageBase64,
+    ForSchema forSchema = ForSchema.openai,
+  }) {
     return OpenAISchema(
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +69,7 @@ class OpenAiFunctionCalling {
               {
                 "type": "text",
                 "text":
-                    "You are a tool that extracts structured data from Bangladeshi certificates. For Higher Secondary Certificate (HSC) or Secondary School Certificate (SSC)."
+                    "You are a tool that extracts structured data from Bangladeshi certificates. For Higher Secondary Certificate (HSC) or Secondary School Certificate (SSC). ${forSchema == ForSchema.openai ? "Your goal is to output data in strict JSON format according to the provided schema." : ''}"
               }
             ]
           },
@@ -145,9 +149,12 @@ class OpenAiFunctionCalling {
             }
           }
         ],
-        "tool_config": {
-          "function_calling_config": {"mode": "ANY"}
-        }
+        if (forSchema == ForSchema.gemini)
+          "tool_config": {
+            "function_calling_config": {"mode": "ANY"}
+          },
+        if (forSchema == ForSchema.openai)
+          "response_format": {"type": "json_object"}
       },
     );
   }

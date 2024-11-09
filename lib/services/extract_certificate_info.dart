@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:certificatescanner/models/certificate_info.dart';
 import 'package:certificatescanner/services/gemini_api.dart';
 import 'package:certificatescanner/utils/open_ai_function_calling.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import 'google_vision_api.dart';
@@ -39,7 +40,8 @@ class ExtractCertificateInfo {
 
       debugPrint('API Response:  ${jsonEncode(result)}');
       return OpenAiFunctionCalling.getCertificateInfoFromOpenAiResponse(result);
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+      debugPrint(jsonEncode(e.response!.data));
       return CertificateInfo(errorMsg: e.toString());
     }
   }

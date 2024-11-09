@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../keys/api_key.dart';
 import '../utils/open_ai_function_calling.dart';

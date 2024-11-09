@@ -1,6 +1,4 @@
 import 'package:dio/dio.dart';
-
-import '../keys/api_key.dart';
 import '../utils/open_ai_function_calling.dart';
 
 /*
@@ -30,6 +28,7 @@ class GeminiApi {
       apiKey: apiKey,
       modelName: modelName,
       imageBase64: imageBase64,
+      forSchema: ForSchema.gemini,
     );
     final response = await dio.post(
       "https://$location-aiplatform.googleapis.com/v1beta1/projects/$projectId/locations/$location/endpoints/openapi/chat/completions",
